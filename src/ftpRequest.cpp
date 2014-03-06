@@ -3,7 +3,13 @@
 
 ftpRequest::ftpRequest() {}
 
-ftpRequest::ftpRequest(string cmd, string arg = "")
+ftpRequest::ftpRequest(string cmd)
+{
+	m_cmd = cmd;
+	m_arg = string("");
+}
+
+ftpRequest::ftpRequest(string cmd, string arg)
 {
 	m_cmd = cmd;
 	m_arg =  arg;
@@ -22,7 +28,7 @@ ftpRequest ftpRequest::parseFtpRequest(string s)
 		i++;
 	}
 	arg = "";
-	if(s[i] == '\r')	return;
+	if(s[i] == '\r')	return ftpRequest(cmd,arg);
 	for(i += 1; s[i] != '\r'; i++)
 	{
 		arg += s[i];

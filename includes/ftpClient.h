@@ -7,6 +7,10 @@
 #include "tcpSocket.h"
 #include <ostream>
 
+#define FILE_BLOCK_SIZE 1024
+
+using namespace std;
+
 class ftpClient
 {
 private:
@@ -18,6 +22,15 @@ private:
 	ostream& m_log;
 public:
 	ftpClient(string server_hostname, unsigned short server_port, ostream& log);
+	void setDataPort(unsigned short data_port);
+	void setServerPort(unsigned short server_port);
+	void setServerName(string server_hostname);
+	unsigned short getDataPort();
+	unsigned short getServerPort();
+	string getServerName();
+	tcpSocket getDataSocket();
+	tcpSocket getControlSocket();
+	ostream& getLog();
 	bool setupDataPort();
 	bool sendRequest(ftpRequest request);
 	ftpResponse recvResponse();
@@ -25,6 +38,8 @@ public:
 	void pwd();
 	void cd(string pathname);
 	void ls();
+	void get(string filename, ostream& f);
+	void put(string filename, istream& f);
 };
 
 #endif

@@ -92,7 +92,7 @@ tcpSocket tcpSocket::accept()
 	return tcpSocket(::accept(m_sd, (struct sockaddr *)&their_addr, &addr_size));
 }
 
-int tcpSocket::send(string data)
+int tcpSocket::sendString(string data)
 {
 	//if socket is uninitialized
 	if (m_sd <= 0)
@@ -100,8 +100,19 @@ int tcpSocket::send(string data)
 		return -1;
 	}
 	
-	return ::send(m_sd, data.c_str(), data.length(), 0);
+	return send(m_sd, data.c_str(), data.length(), 0);
 	
+}
+
+int tcpSocket::sendData(char* buffer, int size)
+{
+	//if socket is uninitialized
+	if (m_sd <= 0)
+	{
+		return -1;
+	}
+	
+	return send(m_sd, buffer, size, 0);
 }
 
 string tcpSocket::recvString(int max_bytes)
@@ -115,7 +126,7 @@ string tcpSocket::recvString(int max_bytes)
 	char* buffer = new char[max_bytes];
 	
 	int bytes_recveived = recv(m_sd, buffer, max_bytes-1, 0);
-	buffer[max_bytes-1] = '\0';
+	buffer[bytes_recveived] = '\0';
 	
 	return string(buffer);
 }
