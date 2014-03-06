@@ -31,6 +31,7 @@ public:
 	tcpSocket(int sd);
 	
 	unsigned short getSrcPort();
+	string getSrcHostname();
 	
 	bool connect(string hostname, unsigned short port);
 	bool bind();

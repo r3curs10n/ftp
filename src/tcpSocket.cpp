@@ -10,7 +10,19 @@ tcpSocket::tcpSocket(int sd):
 
 unsigned short tcpSocket::getSrcPort()
 {
-	return m_src_port;
+	struct sockaddr_in localAddress;
+	socklen_t addressLength = sizeof(localAddress);
+	getsockname(m_sd, (struct sockaddr*)&localAddress, &addressLength);
+	return ntohs(localAddress.sin_port);
+}
+
+string tcpSocket::getSrcHostname()
+{
+	/*struct sockaddr_in localAddress;
+	socklen_t addressLength = sizeof(localAddress);
+	getsockname(m_sd, (struct sockaddr*)&localAddress, &addressLength);
+	return string(inet_ntoa( localAddress.sin_addr));*/
+	return string("127.0.0.1");
 }
 
 bool tcpSocket::connect(string hostname, unsigned short port)
@@ -41,7 +53,6 @@ bool tcpSocket::bind(unsigned short port)
 {
 	stringstream strport;
 	strport<<port;
-
 	struct addrinfo hints, *res;
 
 	// first, load up address structs with getaddrinfo():
@@ -60,7 +71,6 @@ bool tcpSocket::bind(unsigned short port)
 	// bind it to the port we passed in to getaddrinfo():
 
 	bool success = ::bind(m_sd, res->ai_addr, res->ai_addrlen) != -1;
-	m_src_port = ntohs(((struct sockaddr_in*) res->ai_addr)->sin_port);
 	return success;
 	
 }
