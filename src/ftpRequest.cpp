@@ -3,44 +3,40 @@
 
 ftpRequest::ftpRequest() {}
 
-ftpRequest::ftpRequest(string cmd, string arg)
+ftpRequest::ftpRequest(string cmd, string arg = "")
 {
 	m_cmd = cmd;
 	m_arg =  arg;
 }
 
+/// input: string containing request from socket
+/// output: ftpRequest object
 ftpRequest ftpRequest::parseFtpRequest(string s)
 {
 	int i = 0;
 	string cmd,arg;
 	cmd = "";
-	while(s[i]!=' ')
+	while(s[i] != ' ' && s[i] != '\r')
 	{
 		cmd += s[i];
 		i++;
 	}
-	if(s=="PWD" || s=="QUIT")
+	arg = "";
+	if(s[i] == '\r')	return;
+	for(i += 1; s[i] != '\r'; i++)
 	{
-		arg = "";
+		arg += s[i];
 	}
-	else
+	if(cmd == "PORT")
 	{
-		i++;
-		if(s=="PORT")
-		{
-			arg = combinePortArg(s.substr(i,s.length()-i));
-		}
-		else
-		{
-			arg = s.substr(i,s.length()-i);
-		}
+		arg = splitPortArg(arg);
 	}
 	return ftpRequest(cmd,arg);
 }
 
 string ftpRequest::toString()
 {
-	if(m_cmd == "PWD" || m_cmd == "QUIT")
+	if(m_arg == "")
 	{
 		return m_cmd + "\r\n";
 	}
