@@ -1,8 +1,7 @@
 #include "../includes/ftpClient.h"
-#include "../includes/ftpResponse.h"
-#include <thread>
 
-ftpClient::ftpClient(string server_hostname, unsigned short server_port)
+ftpClient::ftpClient(string server_hostname, unsigned short server_port, ostream& log):
+	m_log(log)
 {
 	m_server_hostname = server_hostname;
 	m_server_port = server_port;
@@ -36,50 +35,55 @@ bool ftpClient::connect(string username, string password)
 		return false;
 	}
 	
-	sendRequest(ftpRequest("USER", username));
+	sendRequest(ftpRequest(string("USER"), username));
 	ftpResponse response = recvResponse();
-	m_log << response.msg << endl;
+	m_log << response.getMessage() << endl;
 	
-	sendRequest(ftpRequest("PASS", password));
+	sendRequest(ftpRequest(string("PASS"), password));
 	response = recvResponse();	
-	m_log << response.msg << endl;
+	m_log << response.getMessage() << endl;
 	
 	return true;
 }
 
 void ftpClient::pwd()
 {
-	sendRequest("PWD");
+	sendRequest(ftpRequest(string("PWD")));
 	ftpResponse response = recvResponse();
-	m_log << response.msg << endl;
+	m_log << response.getMessage() << endl;
 }
 
 void ftpClient::cd(string pathname)
 {
-	sendRequest("CWD", pathname);
+	sendRequest(ftpRequest(string("CWD"), pathname));
 	ftpResponse response = recvResponse();
-	m_log << response.msg << endl;
+	m_log << response.getMessage() << endl;
 }
 
 void ftpClient::ls()
 {
-	sendRequest(ftpRequest("PORT",m_data_port));
-	ftpResponse response = recvResponse();
-	m_log << response.msg << endl;
+
+	stringstream clientInfo;
 	
-	sendRequest(ftpRequest("LIST"));
+	clientInfo << m_data_socket.getSrcHostname() << ":" << m_data_port;
+	
+	sendRequest(ftpRequest(string("PORT"),clientInfo.str()));
+	ftpResponse response = recvResponse();
+	m_log << response.getMessage() << endl;
+	
+	sendRequest(ftpRequest(string("LIST")));
 	response = recvResponse();
-	m_log << response.msg << endl;
+	m_log << response.getMessage() << endl;
 	
 	string s;
 	tcpSocket cur_data_socket = m_data_socket.accept();
-	while((s = m_data_socket.recvString()).length() > 0)
+	while((s = cur_data_socket.recvString()).length() > 0)
 	{
 		m_log << s << endl;
 	}
 	cur_data_socket.close();
 	
 	response = recvResponse();
-	m_log << response.msg << endl;
+	m_log << response.getMessage() << endl;
 }
 
