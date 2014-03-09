@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace sys
+namespace sgys
 {
 	string pwd()
 	{
@@ -39,10 +39,10 @@ namespace sys
 	}
 }
 
-int main()
+/*int main()
 {
 	cout << sys::pwd() << endl;
 	cout << sys::cd("..") << endl;
 	cout << sys::pwd() << endl;
 	sys::ls();
-}
+}*/
