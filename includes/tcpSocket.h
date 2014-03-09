@@ -39,7 +39,8 @@ public:
 	bool listen();
 	tcpSocket accept();
 	
-	int send(string data);
+	int sendString(string data);
+	int sendData(char* buffer, int size);
 	string recvString(int max_bytes);
 	string recvString();
 	

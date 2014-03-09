@@ -7,6 +7,51 @@ ftpClient::ftpClient(string server_hostname, unsigned short server_port, ostream
 	m_server_port = server_port;
 }
 
+void ftpClient::setServerPort(unsigned short server_port)
+{
+	m_server_port = server_port;
+}
+
+void ftpClient::setDataPort(unsigned short data_port)
+{
+	m_data_port = data_port;
+}
+
+void ftpClient::setServerName(string server_hostname)
+{
+	m_server_hostname = server_hostname;
+}
+
+unsigned short ftpClient::getDataPort()
+{
+	return m_data_port;
+}
+
+unsigned short ftpClient::getServerPort()
+{
+	return m_server_port;
+}
+
+string ftpClient::getServerName()
+{
+	return m_server_hostname;
+}
+
+tcpSocket ftpClient::getDataSocket()
+{
+	return m_data_socket;
+}
+
+tcpSocket ftpClient::getControlSocket()
+{
+	return m_control_socket;
+}
+
+ostream& ftpClient::getLog()
+{
+	return m_log;
+}
+
 bool ftpClient::setupDataPort()
 {
 	if(m_data_socket.bind() && m_data_socket.listen())
@@ -19,7 +64,7 @@ bool ftpClient::setupDataPort()
 
 bool ftpClient::sendRequest(ftpRequest request)
 {
-	return (m_control_socket.send(request.toString())>0);
+	return (m_control_socket.sendString(request.toString())>0);
 }
 
 ftpResponse ftpClient::recvResponse()
@@ -62,7 +107,6 @@ void ftpClient::cd(string pathname)
 
 void ftpClient::ls()
 {
-
 	stringstream clientInfo;
 	
 	clientInfo << m_data_socket.getSrcHostname() << ":" << m_data_port;
@@ -87,3 +131,74 @@ void ftpClient::ls()
 	m_log << response.getMessage() << endl;
 }
 
+void ftpClient::get(string filename, ostream& f)
+{
+	
+	sendRequest(ftpRequest(string("TYPE"), string("I")));
+	ftpResponse response = recvResponse();
+	m_log << response.getMessage() << endl;
+	
+	stringstream clientInfo;
+	
+	clientInfo << m_data_socket.getSrcHostname() << ":" << m_data_port;
+	
+	sendRequest(ftpRequest(string("PORT"), clientInfo.str()));
+	response = recvResponse();
+	m_log << response.getMessage() << endl;
+	
+	sendRequest(ftpRequest(string("RETR"), filename));
+	response = recvResponse();
+	m_log << response.getMessage() << endl;
+	
+	string s;
+	tcpSocket cur_data_socket = m_data_socket.accept();
+	
+	char buffer[FILE_BLOCK_SIZE];
+	int bytes_received;
+	
+	while((bytes_received = cur_data_socket.recvData(buffer,FILE_BLOCK_SIZE)) > 0)
+	{
+		f.write(buffer, bytes_received);
+	}
+	
+	cur_data_socket.close();
+	
+	response = recvResponse();
+	m_log << response.getMessage() << endl;
+}
+
+void ftpClient::put(string filename, istream& f)
+{
+	
+	sendRequest(ftpRequest(string("TYPE"), string("I")));
+	ftpResponse response = recvResponse();
+	m_log << response.getMessage() << endl;
+	
+	stringstream clientInfo;
+	
+	clientInfo << m_data_socket.getSrcHostname() << ":" << m_data_port;
+	
+	sendRequest(ftpRequest(string("PORT"), clientInfo.str()));
+	response = recvResponse();
+	m_log << response.getMessage() << endl;
+	
+	sendRequest(ftpRequest(string("STOR"), filename));
+	response = recvResponse();
+	m_log << response.getMessage() << endl;
+	
+	string s;
+	tcpSocket cur_data_socket = m_data_socket.accept();
+	
+	char buffer[FILE_BLOCK_SIZE];
+	
+	while(!f.eof())
+	{
+		f.read(buffer, FILE_BLOCK_SIZE);
+		cur_data_socket.sendData(buffer, f.gcount());
+	}
+	
+	cur_data_socket.close();
+	
+	response = recvResponse();
+	m_log << response.getMessage() << endl;
+}

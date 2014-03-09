@@ -17,6 +17,7 @@ private:
 public:
 
 	ftpRequest();
+	ftpRequest(string cmd);
 	ftpRequest(string cmd, string arg);
 	static ftpRequest parseFtpRequest(string s);
 	string toString();
