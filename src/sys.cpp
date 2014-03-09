@@ -20,11 +20,10 @@ namespace sys
 		return chdir(dir.c_str());
 	}
 	
-	// Parameters could be implemented
-	string ls(string dir = "")
+	string ls(string arg = "")
 	{
 		string cmd = "ls";
-		if(dir != "")	cmd += " " + dir;
+		if(dir != "")	cmd += " " + arg;
 		FILE* file = popen(cmd.c_str(), "r");
 		// use fscanf to read:
 		char buffer[100];
@@ -34,15 +33,11 @@ namespace sys
 			fileList += string(buffer) + "\t";
 		}
 		pclose(file);
-		//cout << fileList << endl;
 		return fileList;
 	}
-}
-
-int main()
-{
-	cout << sys::pwd() << endl;
-	cout << sys::cd("..") << endl;
-	cout << sys::pwd() << endl;
-	sys::ls();
+	
+	string syst()
+	{
+		return string("UNIX");
+	}
 }
