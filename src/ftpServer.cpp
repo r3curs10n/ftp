@@ -1,5 +1,4 @@
-#include "../includes/ftpServer"
-
+#include "../includes/ftpServer.h"
 /*
 
 How the server works:
@@ -21,14 +20,16 @@ client_control_sock: This is passed to the function serveClient. It refers to
 */
 
 //testing stuff
+
 namespace sys {
 	string pwd(){return "troll";}
-	string ls(){return "troll ls";}
-	bool cwd(){return true;};
+	string ls(string arg){return "troll ls";}
+	bool cwd(string arg){return true;};
+	string syst(){return "linux xx";}
 };
 
 int main(){
-	auto serv = ftpServer(4444);
+	ftpServer serv = ftpServer(4448);
 	serv.start();
 	return 0;
 }
@@ -60,9 +61,13 @@ void ftpServer::serveClient(tcpSocket client_control_sock)
 	string sreq;
 	ftpRequest req;
 	
+	//connection ack
+	client_control_sock.sendString( ftpResponse(220, "machauServer").toString() );
+	
 	while ((sreq = client_control_sock.recvString()).length() > 0)
 	{
-		if (!processRequest( ftpRequest::parseFtpRequest(sreq), client_control_sock)) break;
+		ftpRequest req = ftpRequest::parseFtpRequest(sreq);
+		if (!processRequest( req, client_control_sock)) break;
 	}
 	
 }
@@ -70,49 +75,54 @@ void ftpServer::serveClient(tcpSocket client_control_sock)
 // Processes request and returns false if no further requests from client are expeced (QUIT command)
 bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 {
-	if (req.cmd == "PWD")
+	if (req.getCmd() == "PWD")
 	{
 		client_control_sock.sendString( ftpResponse(257, sys::pwd()).toString() );
 	}
-	else if (req.cmd == "CWD");
+	else if (req.getCmd() == "CWD")
 	{
-		if (sys::cwd(req.arg))
+		if (sys::cwd(req.getArg()))
 		{
 			client_control_sock.sendString( ftpResponse(250, "Directory successfully changed.").toString() );
 		}
 		else
 		{
-			client_control_sock.sendString( ftpResponse(550, "Failed to change directory."),toString() );
+			client_control_sock.sendString( ftpResponse(550, "Failed to change directory.").toString() );
 		}
 	}
-	else if (req.cmd == "ls")
+	else if (req.getCmd() == "LIST")
 	{
-		string result = sys::ls(req.arg);
+		client_control_sock.sendString( ftpResponse(150, "Here comes directory listing.").toString() );
+		string result = sys::ls(req.getArg());
 		m_data_sock.sendString(result);
 		m_data_sock.close();
+		client_control_sock.sendString( ftpResponse(226, "Directory send Ok.").toString() );
 	}
-	else if (req.cmd == "RETR")
+	else if (req.getCmd() == "RETR")
 	{
-		ifstream f(req.arg);
+		client_control_sock.sendString( ftpResponse(150, "Here comes the file.").toString() );
+		ifstream f(req.getArg().c_str());
 		if (f.is_open())
 		{
 			char buffer[1024];
-			int n;
-			while ((n=f.read(buffer, 1024))>0)
+			
+			while (!f.eof())
 			{
-				m_data_sock.sendData(buffer, n);
+				f.read(buffer, 1024);
+				m_data_sock.sendData(buffer, f.gcount());
 			}
 			f.close();
 			m_data_sock.close();
+			client_control_sock.sendString( ftpResponse(226, "Transfer complete.").toString() );
 		}
 		else
 		{
 			//respond with some error
 		}
 	}
-	else if (req.cmd == "STOR")
+	else if (req.getCmd() == "STOR")
 	{
-		ofstream(req.arg);
+		ofstream f(req.getArg().c_str());
 		if (f.is_open())
 		{
 			client_control_sock.sendString( ftpResponse(150, "Ok to send data.").toString() );
@@ -130,16 +140,46 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 			//respond with some error
 		}
 	}
-	else if (req.cmd == "USER")
+	else if (req.getCmd() == "USER")
 	{
 		//TODO: actually implement login
 		client_control_sock.sendString(ftpResponse(331, "Please specify password.").toString());
 		string sreq;
 		sreq = client_control_sock.recvString();
-		client_control_sock.sendString(ftpResponse(230, "Login successfull.").toString());
+		client_control_sock.sendString(ftpResponse(230, "Login successful.").toString());
 		
 	}
-	else if (req.cmd == "QUIT")
+	else if (req.getCmd() == "SYST")
+	{
+		client_control_sock.sendString(ftpResponse(215, sys::syst()).toString());
+	}
+	else if (req.getCmd() == "TYPE")
+	{
+		client_control_sock.sendString(ftpResponse(200, "Mode switched.").toString());
+	}
+	else if (req.getCmd() == "PORT")
+	{
+		string arg = req.getArg();
+		cout<<arg<<endl;
+		int i;
+		for (i=0; i<arg.length() && arg[i]!=':'; i++);
+		string hostname = arg.substr(0, i);
+		string port = arg.substr(i+1, arg.length() - (i+1));
+		stringstream s(port);
+		unsigned short uport;
+		s>>uport;
+		cout<<hostname<<"  "<<uport<<endl;
+		if (m_data_sock.connect(hostname, uport))
+		{
+			client_control_sock.sendString( ftpResponse(200, "PORT successful.").toString() );
+		}
+		else
+		{
+			//throw weired error
+			client_control_sock.sendString( ftpResponse(000, "ERROR").toString() );
+		}
+	}
+	else if (req.getCmd() == "QUIT")
 	{
 		client_control_sock.sendString( ftpResponse(221, "Goodbye.").toString() );
 		return false;

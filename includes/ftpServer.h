@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fstream>
 #include "ftpRequest.h"
 #include "ftpResponse.h"
 #include "tcpSocket.h"
@@ -19,7 +20,7 @@ public:
 	
 	bool start();
 	void serveClient(tcpSocket);
-	void processRequest(ftpRequest&, tcpSocket&);
+	bool processRequest(ftpRequest&, tcpSocket&);
 	
 };
 
