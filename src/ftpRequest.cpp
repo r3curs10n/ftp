@@ -35,7 +35,7 @@ ftpRequest ftpRequest::parseFtpRequest(string s)
 	}
 	if(cmd == "PORT")
 	{
-		arg = splitPortArg(arg);
+		arg = combinePortArg(arg);
 	}
 	return ftpRequest(cmd,arg);
 }
@@ -82,7 +82,7 @@ string ftpRequest::splitPortArg(string portArg)
 /// output: xx.yy.zz.ww:1234
 string ftpRequest::combinePortArg(string portArg)
 {
-	int cnt = 0,port = 0;
+	int cnt = 0,port = 0, portTemp=0;
 	stringstream convert;
 	for(int i=0;i<portArg.length();i++)
 	{
@@ -100,13 +100,23 @@ string ftpRequest::combinePortArg(string portArg)
 				{
 					if(portArg[j]==',')
 					{
-						port *= 256;
+						port = port*256 + portTemp;
+						portTemp=0;
+					}
+					else if (isdigit(portArg[j]))
+					{
+						portTemp = portTemp*10 + (portArg[j]-'0');
 					}
 					else
 					{
-						port = port*10 + (portArg[j]-'0');
+						port = port*256 + portTemp;
+						portTemp=0;
+						break;
 					}
 				}
+				port = port*256 + portTemp;
+				portTemp=0;
+				
 				portArg = portArg.substr(0,i+1);
 				convert << port;
 				portArg += convert.str();
