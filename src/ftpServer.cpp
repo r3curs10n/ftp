@@ -103,7 +103,7 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 	}
 	else if (req.getCmd() == "CWD")
 	{
-		if (sys::cd(req.getArg()))
+		if (!sys::cd(req.getArg()))
 		{
 			client_control_sock.sendString( ftpResponse(250, "Directory successfully changed.").toString() );
 		}

@@ -72,23 +72,38 @@ ftpResponse ftpClient::recvResponse()
 	return ftpResponse::parseFtpResponse(m_control_socket.recvString());
 }
 
-bool ftpClient::connect(string username, string password)
+bool ftpClient::connect()
 {
 	if(!m_control_socket.connect(m_server_hostname,m_server_port))
 	{
-		m_log << "Connection Failed!" << endl;
+		ftpResponse response = recvResponse();
+		m_log << response.getMessage() << endl;
 		return false;
 	}
-	
+	else
+	{
+		ftpResponse response = recvResponse();
+		m_log << response.getMessage() << endl;
+		return true;
+	}
+}
+
+
+void ftpClient::sendUsername(string username)
+{
 	sendRequest(ftpRequest(string("USER"), username));
 	ftpResponse response = recvResponse();
 	m_log << response.getMessage() << endl;
-	
+}
+
+bool ftpClient::sendPassword(string password)
+{
 	sendRequest(ftpRequest(string("PASS"), password));
-	response = recvResponse();	
+	ftpResponse response = recvResponse();	
 	m_log << response.getMessage() << endl;
 	
-	return true;
+	if(response.getCode() == 230)	return true;
+	else return false;
 }
 
 void ftpClient::pwd()
@@ -105,7 +120,7 @@ void ftpClient::cd(string pathname)
 	m_log << response.getMessage() << endl;
 }
 
-void ftpClient::ls()
+void ftpClient::ls(string dir)
 {
 	stringstream clientInfo;
 	
@@ -115,7 +130,7 @@ void ftpClient::ls()
 	ftpResponse response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
-	sendRequest(ftpRequest(string("LIST")));
+	sendRequest(ftpRequest(string("LIST ") + dir));
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
@@ -129,6 +144,8 @@ void ftpClient::ls()
 	
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
+	
+	cout << "Done" << endl;
 }
 
 void ftpClient::get(string filename, ostream& f)
@@ -203,4 +220,9 @@ void ftpClient::put(string filename, istream& f)
 	m_log << response.getMessage() << endl;
 }
 
-
+void ftpClient::quit()
+{
+	sendRequest(ftpRequest(string("QUIT")));
+	ftpResponse response = recvResponse();
+	m_log << response.getMessage() << endl;
+}

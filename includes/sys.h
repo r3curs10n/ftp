@@ -38,7 +38,7 @@ namespace sys
 		pclose(file);*/
 	}
 	
-	int cd(string dir = "")
+	int cd(string dir)
 	{
 		cout << dir << endl;
 		return chdir(dir.c_str());
@@ -50,7 +50,7 @@ namespace sys
 		return chroot(dir.c_str());
 	}
 	
-	string ls(string arg = "")
+	string ls(string arg)
 	{
 		string cmd = "ls";
 		if(arg != "")	cmd += " " + arg;

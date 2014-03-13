@@ -10,6 +10,8 @@
 #include "tcpSocket.h"
 #include "auth.h"
 
+using namespace std;
+
 class ftpServer
 {
 private:

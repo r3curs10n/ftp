@@ -34,12 +34,15 @@ public:
 	bool setupDataPort();
 	bool sendRequest(ftpRequest request);
 	ftpResponse recvResponse();
-	bool connect(string username, string password);
+	bool connect();
+	void sendUsername(string username);
+	bool sendPassword(string password);
 	void pwd();
 	void cd(string pathname);
-	void ls();
+	void ls(string dir);
 	void get(string filename, ostream& f);
 	void put(string filename, istream& f);
+	void quit();
 };
 
 #endif
