@@ -69,18 +69,23 @@ namespace sys
 		}
 		pclose(file);
 		
+		cout << fileList.str() << endl;
+		
 		return fileList.str();
 		
-		/*DIR Dir;
-		struct dirent *DirEntry;
-		Dir = opendir(arg.c_str());
+		/*stringstream ss;
 		
-		stringstream ss;
-		
-		while(Dir=readdir(Dir))
-		{
-		   ss << DirEntry->d_name;
+		DIR *dp;
+		struct dirent *dirp;
+		if((dp  = opendir(dir.c_str())) == NULL) {
+		    cout << "Error(" << errno << ") opening " << dir << endl;
+		    return "";
 		}
+
+		while ((dirp = readdir(dp)) != NULL) {
+		    ss << string(dirp->d_name) ;
+		}
+		closedir(dp);
 		
 		return ss.str();*/
 	}

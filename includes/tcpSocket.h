@@ -33,6 +33,9 @@ public:
 	unsigned short getSrcPort();
 	string getSrcHostname();
 	
+	unsigned short getDestPort();
+	string getDestHostname();
+	
 	bool connect(string hostname, unsigned short port);
 	bool bind();
 	bool bind(unsigned short port);

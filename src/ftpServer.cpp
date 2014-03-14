@@ -22,13 +22,6 @@ client_control_sock: This is passed to the function serveClient. It refers to
 
 //testing stuff
 
-namespace ggsyjs {
-	string pwd(){return "troll";}
-	string ls(string arg){return "troll ls";}
-	bool cwd(string arg){return true;};
-	string syst(){return "linux xx";}
-};
-
 int main(){
 	ftpServer serv = ftpServer(4448);
 	serv.start();
@@ -48,6 +41,9 @@ bool ftpServer::start()
 	while (true)
 	{
 		tcpSocket client_sock = m_control_sock.accept();
+		
+		cout << "Got connection from " << client_sock.getDestHostname() << ":" << client_sock.getDestPort() << endl;
+		
 		if (!fork())
 		{
 			//child
@@ -73,7 +69,7 @@ void ftpServer::serveClient(tcpSocket client_control_sock)
 	
 }
 
-// Processes request and returns false if no further requests from client are expeced (QUIT command)
+// Processes request and returns false if no further requests from client are expected (QUIT command)
 bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 {
 	if (req.getCmd() == "USER")
@@ -122,10 +118,10 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 	}
 	else if (req.getCmd() == "RETR")
 	{
-		client_control_sock.sendString( ftpResponse(150, "Here comes the file.").toString() );
 		ifstream f(req.getArg().c_str());
 		if (f.is_open())
 		{
+			client_control_sock.sendString( ftpResponse(150, "Here comes the file.").toString() );
 			char buffer[1024];
 			
 			while (!f.eof())
@@ -139,7 +135,7 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 		}
 		else
 		{
-			//respond with some error
+			client_control_sock.sendString( ftpResponse(550, "Failed to open file.").toString() );
 		}
 	}
 	else if (req.getCmd() == "STOR")
@@ -159,7 +155,7 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 		}
 		else
 		{
-			//respond with some error
+			client_control_sock.sendString( ftpResponse(550, "Failed to open file.").toString() );
 		}
 	}
 	else if (req.getCmd() == "SYST")
@@ -188,8 +184,7 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 		}
 		else
 		{
-			//throw weired error
-			client_control_sock.sendString( ftpResponse(000, "ERROR").toString() );
+			client_control_sock.sendString( ftpResponse(500, "Illegal PORT command.").toString() );
 		}
 	}
 	else if (req.getCmd() == "QUIT")

@@ -18,11 +18,28 @@ unsigned short tcpSocket::getSrcPort()
 
 string tcpSocket::getSrcHostname()
 {
-	/*struct sockaddr_in localAddress;
+	struct sockaddr_in localAddress;
 	socklen_t addressLength = sizeof(localAddress);
 	getsockname(m_sd, (struct sockaddr*)&localAddress, &addressLength);
-	return string(inet_ntoa( localAddress.sin_addr));*/
-	return string("127.0.0.1");
+	return string(inet_ntoa( localAddress.sin_addr));
+	//return string("127.0.0.1");
+}
+
+unsigned short tcpSocket::getDestPort()
+{
+	struct sockaddr_in localAddress;
+	socklen_t addressLength = sizeof(localAddress);
+	getpeername(m_sd, (struct sockaddr*)&localAddress, &addressLength);
+	return ntohs(localAddress.sin_port);
+}
+
+string tcpSocket::getDestHostname()
+{
+	struct sockaddr_in localAddress;
+	socklen_t addressLength = sizeof(localAddress);
+	getpeername(m_sd, (struct sockaddr*)&localAddress, &addressLength);
+	return string(inet_ntoa( localAddress.sin_addr));
+	//return string("127.0.0.1");
 }
 
 bool tcpSocket::connect(string hostname, unsigned short port)

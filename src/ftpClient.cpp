@@ -124,11 +124,13 @@ void ftpClient::ls(string dir)
 {
 	stringstream clientInfo;
 	
-	clientInfo << m_data_socket.getSrcHostname() << ":" << m_data_port;
+	clientInfo << m_control_socket.getSrcHostname() << ":" << m_data_port;
 	
 	sendRequest(ftpRequest(string("PORT"),clientInfo.str()));
 	ftpResponse response = recvResponse();
 	m_log << response.getMessage() << endl;
+	
+	if(response.getCode() != 200)	return;
 	
 	sendRequest(ftpRequest(string("LIST ") + dir));
 	response = recvResponse();
@@ -136,6 +138,7 @@ void ftpClient::ls(string dir)
 	
 	string s;
 	tcpSocket cur_data_socket = m_data_socket.accept();
+	
 	while((s = cur_data_socket.recvString()).length() > 0)
 	{
 		m_log << s << endl;
@@ -144,8 +147,6 @@ void ftpClient::ls(string dir)
 	
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
-	
-	cout << "Done" << endl;
 }
 
 void ftpClient::get(string filename, ostream& f)
@@ -163,9 +164,13 @@ void ftpClient::get(string filename, ostream& f)
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
+	if(response.getCode() != 200)	return;
+	
 	sendRequest(ftpRequest(string("RETR"), filename));
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
+	
+	if(response.getCode() != 150)	return;
 	
 	string s;
 	tcpSocket cur_data_socket = m_data_socket.accept();
@@ -199,9 +204,13 @@ void ftpClient::put(string filename, istream& f)
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
+	if(response.getCode() != 200)	return;
+	
 	sendRequest(ftpRequest(string("STOR"), filename));
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
+	
+	if(response.getCode() != 150)	return;
 	
 	string s;
 	tcpSocket cur_data_socket = m_data_socket.accept();
