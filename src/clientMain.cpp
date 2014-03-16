@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <iostream>
 #include <cstdio>
 #include <fstream>
@@ -49,16 +50,16 @@ int main(int argc, char* argv[])
 	if(!client.connect())	printf("Unable to connect to Server\n");
 	else
 	{	
-		char username[100],password[100];
+		char username[100],*password;
 	
 		do
 		{
 			printf("Enter Username: ");
 			fgets(username, 100, stdin);
-			client.sendUsername(strtok(username,"\n"));
-			printf("Enter Password: ");
-			fgets(password, 100, stdin);
-		}while(!client.sendPassword(strtok(password,"\n")));
+			username[strlen(username)-1] = '\0';
+			client.sendUsername(username);
+			password = getpass("Enter Password: ");
+		}while(!client.sendPassword(password));
 		
 		if(!client.setupDataPort())
 		{
@@ -99,7 +100,11 @@ int main(int argc, char* argv[])
 	  			fb.open (filename, ios::out);
 	  			ostream os(&fb);
 			
-				if(filename)	client.get(filename, os);
+				//ofstream f(filename);
+				if (fb.is_open())	client.get(filename, os);
+				else printf("Unable to create file\n");
+				
+				fb.close();
 			}
 			else if(cmd == "put")
 			{
@@ -107,9 +112,14 @@ int main(int argc, char* argv[])
 			
 				filebuf fb;
 	  			fb.open (filename, ios::in);
+	  			
 	  			istream is(&fb);
-			
-				if(filename)	client.put(filename, is);
+	  			
+				//ifstream f(filename);
+				if (fb.is_open())	client.put(filename, is);
+				else 	printf("Unable to open file\n");
+				
+				fb.close();
 			}
 			else if(cmd == "quit")
 			{
@@ -129,7 +139,11 @@ int main(int argc, char* argv[])
 			else if(cmd == "!cd")
 			{
 				char* dir = strtok(NULL,"\n");
-				if(dir)	sys::cd(dir);
+				if(dir)
+				{
+					if(sys::cd(dir))	cout << "Directory successfully changed." << endl;
+					else	cout << "Failed to change directory." << endl;
+				}
 			}		
 		}
 	}	

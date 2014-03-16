@@ -10,6 +10,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sstream>
+#include <errno.h>
 
 using namespace std;
 
@@ -18,48 +19,42 @@ namespace sys
 	string pwd()
 	{
 		char cwd[1024];
+		errno = 0;
 		getcwd(cwd, sizeof(cwd));
-		return string(cwd);
-		
-		/*string cmd = "pwd";
-		FILE* file = popen(cmd.c_str(), "r");
-		// use fscanf to read:
-		char buffer[105];
-		string fileList;
-		int n;
-		while(!feof(file))
-		{
-			fgets(buffer, 100, file);
-			n = strlen(buffer);
-			buffer[n] = '\0';
-			fileList += string(buffer);
-		}
-		cout<<">>Current Dir: \n"<<fileList<<endl;
-		pclose(file);*/
+		if(errno)	return string(strerror(errno));
+		return string(cwd);	
 	}
 	
-	int cd(string dir)
+	bool cd(string dir)
 	{
-		cout << dir << endl;
-		return chdir(dir.c_str());
+		return chdir(dir.c_str()) != -1;
 	}
 	
-	int setRootDir(string dir)
+	bool setRootDir(string dir)
 	{
-		cout << dir << endl;
-		return chroot(dir.c_str());
+		errno = 0;
+		chroot(dir.c_str());
+		if(errno)	false;
+		return true;
 	}
 	
 	string ls(string arg)
 	{
 		string cmd = "ls";
 		if(arg != "")	cmd += " " + arg;
+		
+		cmd += " 2>&1\n";
+		
+		errno = 0;
+		
 		FILE* file = popen(cmd.c_str(), "r");
-		// use fscanf to read:
-		char buffer[105];
+		
+		if(errno)	return string(strerror(errno)); 
+		
+		char buffer[1024];
 		stringstream fileList;
 		int n;
-		while((n=fread(buffer, 1, 100, file))>0)
+		while((n=fread(buffer, 1, 1024, file))>0)
 		{
 			for (int i=0; i<n; i++)
 			{
@@ -69,25 +64,7 @@ namespace sys
 		}
 		pclose(file);
 		
-		cout << fileList.str() << endl;
-		
 		return fileList.str();
-		
-		/*stringstream ss;
-		
-		DIR *dp;
-		struct dirent *dirp;
-		if((dp  = opendir(dir.c_str())) == NULL) {
-		    cout << "Error(" << errno << ") opening " << dir << endl;
-		    return "";
-		}
-
-		while ((dirp = readdir(dp)) != NULL) {
-		    ss << string(dirp->d_name) ;
-		}
-		closedir(dp);
-		
-		return ss.str();*/
 	}
 	
 	string syst()

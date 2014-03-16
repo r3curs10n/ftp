@@ -40,8 +40,8 @@ public:
 	void pwd();
 	void cd(string pathname);
 	void ls(string dir);
-	void get(string filename, ostream& f);
-	void put(string filename, istream& f);
+	bool get(string filename, ostream& f);
+	bool put(string filename, istream& f);
 	void quit();
 };
 

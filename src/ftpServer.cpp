@@ -21,16 +21,6 @@ client_control_sock: This is passed to the function serveClient. It refers to
 
 */
 
-//testing stuff
-
-int main(){
-	ftpServer serv = ftpServer(4448);
-	serv.start();
-	return 0;
-}
-
-//end testing stuff
-
 ftpServer::ftpServer(int port):
 	m_port(port)
 {}
@@ -100,7 +90,7 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 	}
 	else if (req.getCmd() == "CWD")
 	{
-		if (!sys::cd(req.getArg()))
+		if (sys::cd(req.getArg()))
 		{
 			client_control_sock.sendString( ftpResponse(250, "Directory successfully changed.").toString() );
 		}
@@ -136,7 +126,8 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 		}
 		else
 		{
-			client_control_sock.sendString( ftpResponse(550, "Failed to open file.").toString() );
+			m_data_sock.close();
+			client_control_sock.sendString( ftpResponse(550, "File not present.").toString() );
 		}
 	}
 	else if (req.getCmd() == "STOR")
@@ -152,11 +143,13 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 				f.write(buffer, n);
 			}
 			f.close();
+			m_data_sock.close();
 			client_control_sock.sendString( ftpResponse(226, "Transfer Complete.").toString() );
 		}
 		else
 		{
-			client_control_sock.sendString( ftpResponse(550, "Failed to open file.").toString() );
+			m_data_sock.close();
+			client_control_sock.sendString( ftpResponse(550, "Failed to create file.").toString() );
 		}
 	}
 	else if (req.getCmd() == "SYST")
