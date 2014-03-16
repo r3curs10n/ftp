@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 	
 	if(argc>2)
 	{
-		if(strlen(argv[2]) > 4)
+		if(strlen(argv[2]) > 5)
 		{
 			printf("Invalid Port\n");
 			return 0; 
