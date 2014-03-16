@@ -1,5 +1,6 @@
 #include "../includes/ftpServer.h"
 #include "../includes/sys.h"
+#include <cstring>
 /*
 
 How the server works:
@@ -171,15 +172,17 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 		bool success = true;
 		string hostname;
 		unsigned short port;
-		char* arg = req.getArg().c_str();
+		string sarg = req.getArg();
+		char* arg = new char[sarg.length()];
+		strcpy(arg, sarg.c_str());
 
 		char* tok = strtok(arg, ":");
-		if (tok) hostname = string(tok) else success = false;
+		if (tok) hostname = string(tok); else success = false;
 
 		tok = strtok(NULL, ":");
-		if (tok) port = atoi(tok) else success = false;
+		if (tok) port = atoi(tok); else success = false;
 
-		if (success && m_data_sock.connect(hostname, uport))
+		if (success && m_data_sock.connect(hostname, port))
 		{
 			client_control_sock.sendString( ftpResponse(200, "PORT successful.").toString() );
 		}
