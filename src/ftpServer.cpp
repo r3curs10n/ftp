@@ -168,17 +168,18 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 	}
 	else if (req.getCmd() == "PORT")
 	{
-		string arg = req.getArg();
-		cout<<arg<<endl;
-		int i;
-		for (i=0; i<arg.length() && arg[i]!=':'; i++);
-		string hostname = arg.substr(0, i);
-		string port = arg.substr(i+1, arg.length() - (i+1));
-		stringstream s(port);
-		unsigned short uport;
-		s>>uport;
-		cout<<hostname<<"  "<<uport<<endl;
-		if (m_data_sock.connect(hostname, uport))
+		bool success = true;
+		string hostname;
+		unsigned short port;
+		char* arg = req.getArg().c_str();
+
+		char* tok = strtok(arg, ":");
+		if (tok) hostname = string(tok) else success = false;
+
+		tok = strtok(NULL, ":");
+		if (tok) port = atoi(tok) else success = false;
+
+		if (success && m_data_sock.connect(hostname, uport))
 		{
 			client_control_sock.sendString( ftpResponse(200, "PORT successful.").toString() );
 		}
@@ -186,6 +187,7 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 		{
 			client_control_sock.sendString( ftpResponse(500, "Illegal PORT command.").toString() );
 		}
+
 	}
 	else if (req.getCmd() == "QUIT")
 	{
