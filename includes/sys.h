@@ -17,14 +17,14 @@ using namespace std;
 
 namespace sys
 {
-	bool isRegularFile(string path)
+	inline bool isRegularFile(string path)
 	{
 		struct stat s;
 		if (stat(path.c_str(), &s)!=0) return false;
 		return (bool) (s.st_mode & S_IFREG);
 	}
 
-	string pwd()
+	inline string pwd()
 	{
 		char cwd[1024];
 		errno = 0;
@@ -33,12 +33,12 @@ namespace sys
 		return string(cwd);	
 	}
 	
-	bool cd(string dir)
+	inline bool cd(string dir)
 	{
 		return chdir(dir.c_str()) != -1;
 	}
 	
-	bool setRootDir(string dir)
+	inline bool setRootDir(string dir)
 	{
 		errno = 0;
 		chroot(dir.c_str());
@@ -46,7 +46,7 @@ namespace sys
 		return true;
 	}
 	
-	string ls(string arg)
+	inline string ls(string arg)
 	{
 		string cmd = "ls";
 		if(arg != "")	cmd += " " + arg;
@@ -75,7 +75,7 @@ namespace sys
 		return fileList.str();
 	}
 	
-	string syst()
+	inline string syst()
 	{
 		return string("UNIX");
 	}

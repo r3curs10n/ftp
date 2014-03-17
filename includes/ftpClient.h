@@ -1,7 +1,6 @@
 #ifndef H_FTPCLIENT
 #define H_FTPCLIENT
 
-#include "ftpClient.h"
 #include "ftpResponse.h"
 #include "ftpRequest.h"
 #include "tcpSocket.h"

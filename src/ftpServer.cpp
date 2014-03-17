@@ -109,7 +109,7 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 	}
 	else if (req.getCmd() == "RETR")
 	{
-		if (!sys::isRegularFile(req.getArg())
+		if (!sys::isRegularFile(req.getArg()))
 		{
 			m_data_sock.close();
 			client_control_sock.sendString( ftpResponse(550, "File not present.").toString() );
