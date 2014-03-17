@@ -149,7 +149,7 @@ void ftpClient::ls(string dir)
 	m_log << response.getMessage() << endl;
 }
 
-void ftpClient::get(string filename, ostream& f)
+bool ftpClient::get(string filename, ostream& f)
 {
 	
 	sendRequest(ftpRequest(string("TYPE"), string("I")));
@@ -158,19 +158,19 @@ void ftpClient::get(string filename, ostream& f)
 	
 	stringstream clientInfo;
 	
-	clientInfo << m_data_socket.getSrcHostname() << ":" << m_data_port;
+	clientInfo << m_control_socket.getSrcHostname() << ":" << m_data_port;
 	
 	sendRequest(ftpRequest(string("PORT"), clientInfo.str()));
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
-	if(response.getCode() != 200)	return;
+	if(response.getCode() != 200)	return false;
 	
 	sendRequest(ftpRequest(string("RETR"), filename));
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
-	if(response.getCode() != 150)	return;
+	if(response.getCode() != 150)	return false;
 	
 	string s;
 	tcpSocket cur_data_socket = m_data_socket.accept();
@@ -187,9 +187,11 @@ void ftpClient::get(string filename, ostream& f)
 	
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
+	
+	return true;
 }
 
-void ftpClient::put(string filename, istream& f)
+bool ftpClient::put(string filename, istream& f)
 {
 	
 	sendRequest(ftpRequest(string("TYPE"), string("I")));
@@ -198,19 +200,19 @@ void ftpClient::put(string filename, istream& f)
 	
 	stringstream clientInfo;
 	
-	clientInfo << m_data_socket.getSrcHostname() << ":" << m_data_port;
+	clientInfo << m_control_socket.getSrcHostname() << ":" << m_data_port;
 	
 	sendRequest(ftpRequest(string("PORT"), clientInfo.str()));
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
-	if(response.getCode() != 200)	return;
+	if(response.getCode() != 200)	return false;
 	
 	sendRequest(ftpRequest(string("STOR"), filename));
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
 	
-	if(response.getCode() != 150)	return;
+	if(response.getCode() != 150)	return false;
 	
 	string s;
 	tcpSocket cur_data_socket = m_data_socket.accept();
@@ -227,6 +229,8 @@ void ftpClient::put(string filename, istream& f)
 	
 	response = recvResponse();
 	m_log << response.getMessage() << endl;
+	
+	return true;
 }
 
 void ftpClient::quit()
