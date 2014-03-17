@@ -6,6 +6,7 @@
 #include "tcpSocket.h"
 #include "sys.h"
 #include <ostream>
+#include <iostream>
 
 #define FILE_BLOCK_SIZE 1024
 

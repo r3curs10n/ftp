@@ -31,7 +31,9 @@ int main(int argc, char* argv[])
 	}
 	
 	ftpServer serv = ftpServer(port);
-	serv.start();
+	if (!serv.start()){
+		cout<<"Failed to start server. Try another port."<<endl;
+	}
 	
 	return 0;
 }

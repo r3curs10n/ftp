@@ -1,0 +1,32 @@
+1. Go to the src directory.
+2. Execute the make command.
+3. 2 executable files server and client would be created in the src folder.
+4. A file named 'auth' is present in the src directory, the login credentials of a 
+   user have to be specified in this file along with his default directory. Give all
+   permissions i.e. 777 to the corresponding directory.
+5. Execute the server using the follwing command -> ./server [portnumber]
+6. By default the server tries to bind itself at port number 21.
+7. Execute the client using the following command -> ./client hostname [portnumber]
+8. By default the client tries to connnect at port number 21.
+9. If the connection is successful 'machauServer' will be displayed on your screen.
+10. After that the user has to login with his credentials.
+11. Once the login is successful the ftp prompt i.e. 'ftp>' will be displayed on the screen.
+12. The following commands can be issued at the client ->
+	(i) pwd -> to get the present working directory on the remote host.
+	(ii) ls [arguments] [pathname] -> to list the contents of the 'pathname' directory
+		at remote host. By default the contents of the present directory would be displayed.
+	(iii) cd [pathname]	-> to change the directory to the specified pathname at remote host.
+	(iv) get filename -> to download the specified filename to the present directory.
+	(v) put filename -> to upload the specified filename in the present directory to the
+		current working directory of the remote host.
+	(vi) !pwd -> to get the present working directory on the local host.	
+	(vii) !ls [arguments] [pathname] -> to list the contents of the 'pathname' directory
+		at local host. By default the contents of the present directory would be displayed.
+	(viii) !cd [pathname] -> to change the directory to the specified pathname at local host.
+	(ix) quit -> to end the connection.
+13. Any other command provided at the client is 'Invalid'.
+14. Advanced features ->
+	(i) Multi user login support.
+	(ii) Multiple clients can connect to the server simultaneously.
+	(iii) The client is compatible with the standard FTP server i.e. the vsftpd one.
+	(iv) The server is compatible with the standard FTP client on UNIX.

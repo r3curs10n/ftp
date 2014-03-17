@@ -29,6 +29,8 @@ bool ftpServer::start()
 {
 	if (!(m_control_sock.bind(m_port) && m_control_sock.listen())) return false;
 	
+	cout<<"Server running ..."<<endl;
+	
 	while (true)
 	{
 		tcpSocket client_sock = m_control_sock.accept();

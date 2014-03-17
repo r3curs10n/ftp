@@ -73,6 +73,7 @@ int main(int argc, char* argv[])
 		while(true)
 		{
 			printf("ftp> ");
+			*buffer=0;
 			fgets(buffer, 100, stdin);
 			cmd = string(strtok(buffer," \t\r\n"));
 			
@@ -82,7 +83,6 @@ int main(int argc, char* argv[])
 			}
 			else if(cmd == "ls")
 			{
-				
 				char* dir = strtok(NULL,"\n");
 				if(dir)	client.ls(dir);
 				else client.ls("");
@@ -144,6 +144,10 @@ int main(int argc, char* argv[])
 					if(sys::cd(dir))	cout << "Directory successfully changed." << endl;
 					else	cout << "Failed to change directory." << endl;
 				}
+			}
+			else
+			{
+				cout<<"Invalid command"<<endl;
 			}		
 		}
 	}	
