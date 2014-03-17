@@ -109,25 +109,34 @@ bool ftpServer::processRequest(ftpRequest& req, tcpSocket& client_control_sock)
 	}
 	else if (req.getCmd() == "RETR")
 	{
-		ifstream f(req.getArg().c_str());
-		if (f.is_open())
-		{
-			client_control_sock.sendString( ftpResponse(150, "Here comes the file.").toString() );
-			char buffer[1024];
-			
-			while (!f.eof())
-			{
-				f.read(buffer, 1024);
-				m_data_sock.sendData(buffer, f.gcount());
-			}
-			f.close();
-			m_data_sock.close();
-			client_control_sock.sendString( ftpResponse(226, "Transfer complete.").toString() );
-		}
-		else
+		if (!sys::isRegularFile(req.getArg())
 		{
 			m_data_sock.close();
 			client_control_sock.sendString( ftpResponse(550, "File not present.").toString() );
+			
+		}
+		else
+		{
+			ifstream f(req.getArg().c_str());
+			if (f.is_open())
+			{
+				client_control_sock.sendString( ftpResponse(150, "Here comes the file.").toString() );
+				char buffer[1024];
+			
+				while (!f.eof())
+				{
+					f.read(buffer, 1024);
+					m_data_sock.sendData(buffer, f.gcount());
+				}
+				f.close();
+				m_data_sock.close();
+				client_control_sock.sendString( ftpResponse(226, "Transfer complete.").toString() );
+			}
+			else
+			{
+				m_data_sock.close();
+				client_control_sock.sendString( ftpResponse(550, "File not present.").toString() );
+			}
 		}
 	}
 	else if (req.getCmd() == "STOR")

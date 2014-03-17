@@ -194,6 +194,12 @@ bool ftpClient::get(string filename, ostream& f)
 bool ftpClient::put(string filename, istream& f)
 {
 	
+	if (!sys::isRegularFile(filename))
+	{
+		m_log << "File not present." << endl;
+		return false;
+	}
+	
 	sendRequest(ftpRequest(string("TYPE"), string("I")));
 	ftpResponse response = recvResponse();
 	m_log << response.getMessage() << endl;

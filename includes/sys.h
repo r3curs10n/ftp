@@ -11,11 +11,19 @@
 #include <sys/types.h>
 #include <sstream>
 #include <errno.h>
+#include <sys/stat.h>
 
 using namespace std;
 
 namespace sys
 {
+	bool isRegularFile(string path)
+	{
+		struct stat s;
+		if (stat(path.c_str(), &s)!=0) return false;
+		return (bool) (s.st_mode & S_IFREG);
+	}
+
 	string pwd()
 	{
 		char cwd[1024];
@@ -71,6 +79,7 @@ namespace sys
 	{
 		return string("UNIX");
 	}
+	
 }
 
 #endif
