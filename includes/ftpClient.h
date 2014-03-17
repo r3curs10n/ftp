@@ -5,6 +5,7 @@
 #include "ftpResponse.h"
 #include "ftpRequest.h"
 #include "tcpSocket.h"
+#include "sys.h"
 #include <ostream>
 
 #define FILE_BLOCK_SIZE 1024
